@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "outDir": "./out",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "types": [
+            "node",
+            "fs-extra"
+        ]
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
+}
