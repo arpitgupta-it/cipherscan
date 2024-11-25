@@ -82,7 +82,7 @@ export async function scanWorkspace(context: vscode.ExtensionContext): Promise<b
         );
 
         // Handle and log detected secrets
-        return handleDetectedSecrets(secretsDetected, context);
+        return handleDetectedSecrets(secretsDetected, totalFiles, context);
     } catch (error: unknown) {
         handleError(error);
         return false;
@@ -99,6 +99,7 @@ function isInComment(content: string, lineNumber: number): boolean {
 // Handle detected secrets
 function handleDetectedSecrets(
     secretsDetected: Set<{ secret: string; lineNumber: number; patternName: string, filePath: string }>,
+    totalFiles: number,
     context: vscode.ExtensionContext
 ): boolean {
     if (secretsDetected.size === 0) {
@@ -106,7 +107,7 @@ function handleDetectedSecrets(
         return false;
     }
 
-    // Log secrets using the existing logging utility (contextual logging handled there)
+    // Log secrets using the existing logging utility
     secretsDetected.forEach(secret => {
         logMessage(
             `Secret detected: ${secret.patternName} at line ${secret.lineNumber} in ${secret.filePath}`,
@@ -116,7 +117,7 @@ function handleDetectedSecrets(
 
     try {
         const reportPath = getReportFilePath('exposed-secrets'); // Use a consistent report name
-        generateReport(Array.from(secretsDetected), reportPath, context);
+        generateReport(Array.from(secretsDetected), reportPath, totalFiles, context);
 
         vscode.window.showInformationMessage(`Secrets report generated at: ${reportPath}`);
     } catch (error) {
