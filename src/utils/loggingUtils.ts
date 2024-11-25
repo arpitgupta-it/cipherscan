@@ -29,7 +29,7 @@ export function getLogFilePath(): string {
     }
 
     const logDir = path.join(workspaceFolder, '.cipherscan');
-    const logFilePath = path.join(logDir, 'secrets.log');
+    const logFilePath = path.join(logDir, 'exposed-secrets.log');
 
     try {
         if (!fs.existsSync(logDir)) {
@@ -168,3 +168,31 @@ export function createSeparatorLogLine(message: string, separatorLength: number 
     // Return the separator line with message centered, surrounded by dashes
     return `${'-'.repeat(leftPadding)} ${message} ${'-'.repeat(rightPadding)}`;
 }
+
+/**
+ * Get the report file path for the specified file.
+ * @param fileName The base name of the file to generate a report for.
+ * @returns The full path of the HTML report file in the .cipherscan directory.
+ */
+export function getReportFilePath(fileName: string): string {
+    const workspaceFolder = workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!workspaceFolder) {
+        console.error('No workspace folder found.');
+        return ''; // Ideally throw an error or return a default path
+    }
+
+    const reportDir = path.join(workspaceFolder, '.cipherscan');
+    const reportFilePath = path.join(reportDir, `${fileName}.html`);
+
+    try {
+        if (!fs.existsSync(reportDir)) {
+            fs.mkdirSync(reportDir, { recursive: true });
+        }
+    } catch (err) {
+        console.error('Error creating report directory:', err);
+        throw new Error('Failed to create report directory');
+    }
+
+    return reportFilePath;
+}
+

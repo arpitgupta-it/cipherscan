@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
         logMessage(createSeparatorLogLine('Scan started'), 'info');
 
         try {
-            const hasSecrets = await scanWorkspace();
+            const hasSecrets = await scanWorkspace(context);
 
             // Log scan completion message with a separator
             const scanResultMessage = !hasSecrets
