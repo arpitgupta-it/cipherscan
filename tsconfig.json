@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "outDir": "./out",
+        "target": "es5",
+        "noUnusedParameters": true,
+        "downlevelIteration": true,
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "types": [
+            "node",
+            "fs-extra",
+            "jest"
+        ]
+    },
+    "include": [
+        "src",
+        "src/reports/reportGenerator.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "tests"
+    ]
+}
