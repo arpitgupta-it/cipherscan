@@ -9,7 +9,7 @@ const defaultFileFormatsConfig = {
         "zip", "tar.gz", "tar", "rar", "Dockerfile", "gitlab-ci.yml", "circleci.yml", "tf"
     ],
     exclude: [
-        "node_modules", "dist", ".git", "*.min.js", "package-lock.json", ".vscode", ".cipherscan"  // Default exclusions
+        "**/node_modules", "**/dist", "**/*.min.js", "**/package-lock.json", ".git", ".vscode", ".cipherscan"  // Default exclusions
     ]
 };
 

@@ -100,13 +100,13 @@ If you want to exclude certain files or folders from being scanned, you can spec
 
 ```
 "cipherscan.excludeFiles": [
-    "node_modules", 
-    "dist", 
+    **/node_modules", 
+    "**/dist", 
+    "**/*.min.js", 
+    "**/package-lock.json", 
     ".git", 
-    "*.min.js", 
-    "package-lock.json", 
     ".vscode", 
-    ".cipherscan"
+    ".cipherscan
 ]
 ```
 

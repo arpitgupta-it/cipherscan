@@ -59,11 +59,11 @@
                 "cipherscan.excludeFiles": {
                     "type": "array",
                     "default": [
-                        "node_modules",
-                        "dist",
+                        "**/node_modules",
+                        "**/dist",
+                        "**/*.min.js",
+                        "**/package-lock.json",
                         ".git",
-                        "*.min.js",
-                        "package-lock.json",
                         ".vscode",
                         ".cipherscan"
                     ],
