@@ -39,6 +39,10 @@ export async function executeScan(
 
     // Set targetPath based on user choice
     if (choice === 'Entire Workspace') {
+        if (workspaceFolders.length > 1) {
+            vscode.window.showWarningMessage('Multi-root workspace detected. Please select a specific folder to scan.');
+            return; // Exit if multi-root workspace is detected
+        }
         targetPath = workspaceFolders[0].uri.fsPath;  // Use the first workspace folder path
         locationType = 'Workspace';
     } else if (choice === 'Specific Folder') {
