@@ -85,7 +85,7 @@ export async function addToGitIgnore(): Promise<void> {
             }
         }
     } catch (error) {
-// If an error occurs while checking the Git folder or modifying .gitignore, add to log file
+        // If an error occurs while checking the Git folder or modifying .gitignore, add to log file
         logMessage('Failed to locate .git folder or modify .gitignore.', 'info');
     }
 }
@@ -100,4 +100,30 @@ export function checkAndAddToGitIgnore(): void {
     if (gitIgnoreBoolean) {
         addToGitIgnore(); // Add .cipherscan to .gitignore if setting is enabled
     }
+}
+
+/**
+ * Sets up listeners for workspace folder changes and configuration changes.
+ * Ensures `.gitignore` is updated dynamically as the workspace or settings change.
+ * 
+ * @param context - The VS Code extension context for managing subscriptions.
+ */
+export function setupGitIgnoreListeners(context: vscode.ExtensionContext): void {
+    // Initial check on activation
+    checkAndAddToGitIgnore();
+
+    // Listen for workspace folder changes
+    const folderChangeListener = vscode.workspace.onDidChangeWorkspaceFolders(() => {
+        checkAndAddToGitIgnore();
+    });
+
+    // Watch for configuration changes
+    const configChangeListener = vscode.workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration('cipherscan.addToGitIgnore')) {
+            checkAndAddToGitIgnore();
+        }
+    });
+
+    // Add listeners to context.subscriptions to ensure they are cleaned up on deactivation
+    context.subscriptions.push(folderChangeListener, configChangeListener);
 }

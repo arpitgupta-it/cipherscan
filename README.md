@@ -37,7 +37,7 @@ If CipherScan helps you, consider giving us a ⭐ on **[GitHub](https://github.c
    - Open **VSCode**, go to the **Extensions Marketplace**, and search for **CipherScan**.
    - Click **Install** to add the extension.
 ### 2. Manual Installation from `.vsix` File (Alternative)
-   - Visit the [CipherScan GitHub repository](https://github.com/arpitgupta-it/cipherscan) and download the `.vsix` package from the **/dist** folder.
+   - Visit the [CipherScan GitHub repository](https://github.com/cipherscan/cipherscan-vscode) and download the latest `.vsix` package from the **Releases** section or from the ***/dist** folder.
    - In **VSCode**, open the **Command Palette** (`Ctrl+Shift+P`), search for **"Install from VSIX"**, and select the downloaded file.
 ### 3. Run a Scan
    - After installation, click the **Find Exposed Secrets** button in the **status bar** to start scanning your workspace for secrets.
@@ -100,12 +100,13 @@ If you want to exclude certain files or folders from being scanned, you can spec
 
 ```
 "cipherscan.excludeFiles": [
-    "node_modules",
-    "dist",
-    ".git",
-    "*.min.js",
-    ".cipherscan",
-    ".vscode"
+    "node_modules", 
+    "dist", 
+    ".git", 
+    "*.min.js", 
+    "package-lock.json", 
+    ".vscode", 
+    ".cipherscan"
 ]
 ```
 

@@ -1,7 +1,7 @@
 import { initializeStatusBar, disposeStatusBar } from './utils/statusBarUtils';
 import { scanLocation } from './detectors/secretDetector';
 import { logMessage } from './utils/loggingUtils';
-import { watchGitCommit, checkAndAddToGitIgnore } from './utils/gitUtils';
+import { watchGitCommit, setupGitIgnoreListeners } from './utils/gitUtils';
 import { executeScan } from './utils/scanUtils';
 import * as vscode from 'vscode';
 
@@ -18,16 +18,11 @@ export function activate(context: vscode.ExtensionContext) {
     // Set up Git commit watcher to prompt for secret scans whenever a commit is made
     watchGitCommit(context);
 
+    // Set up Git ignore-related listeners
+    setupGitIgnoreListeners(context);
+
     // Initialize the status bar with the scan action button
     initializeStatusBar(context);
-
-    // Watch for changes in the configuration related to Git ignore behavior
-    vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration('cipherscan.addToGitIgnore')) {
-            // Automatically add '.cipherscan' folder to .gitignore if the configuration allows it
-            checkAndAddToGitIgnore();
-        }
-    });
 
     // Register a command that starts the scan, either for the entire workspace or a specific folder
     const scanCommand = vscode.commands.registerCommand('cipherscan.startScan', async () => {

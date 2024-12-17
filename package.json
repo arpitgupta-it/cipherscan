@@ -63,6 +63,8 @@
                         "dist",
                         ".git",
                         "*.min.js",
+                        "package-lock.json",
+                        ".vscode",
                         ".cipherscan"
                     ],
                     "description": "Files or folders to exclude from secret scanning.",
