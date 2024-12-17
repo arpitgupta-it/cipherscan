@@ -78,7 +78,7 @@ export async function addToGitIgnore(): Promise<void> {
             );
 
             if (response === 'Yes') {
-                fs.appendFileSync(gitignorePath, '\n.cipherscan\n');
+                fs.appendFileSync(gitignorePath, '\n# Ignore .cipherscan folder\n.cipherscan\n');
                 vscode.window.showInformationMessage('.cipherscan folder added to .gitignore.');
             } else {
                 vscode.window.showInformationMessage('.cipherscan folder was not added to .gitignore.');
