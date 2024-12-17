@@ -1,5 +1,5 @@
 # CipherScan for VSCode
-If CipherScan helps you, consider giving us a ⭐ on **[GitHub](https://github.com/arpitgupta-it/cipherscan)**! Your support encourages future development and helps others discover this tool!
+If CipherScan helps you, consider giving us a ⭐ on **[GitHub](https://github.com/cipherscan/cipherscan-vscode)**! Your support encourages future development and helps others discover this tool!
 
 ![CipherScan Logo](src/assets/img/cipherscan-logo128.png)
 
