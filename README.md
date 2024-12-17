@@ -223,7 +223,7 @@ We welcome contributions! If you would like to contribute to **CipherScan**, ple
 9. **Sync Your Fork** (Optional but Recommended):
    To keep your fork updated with the latest changes from the main repository, add the original repository as a remote:
    ```bash
-   git remote add upstream https://github.com/arpitgupta-it/cipherscan.git
+   git remote add upstream https://github.com/cipherscan/cipherscan.git
    ```
    Fetch and merge the latest changes:
    ```bash
