@@ -34,7 +34,12 @@ export async function scanLocation(context: vscode.ExtensionContext, folderPath:
         logMessage(`Found ${files.length} files to scan.`, 'info');
 
         // Scan files for secrets with progress feedback
-        await scanFilesWithProgress(files, secretsDetected);
+        const wasCanceled = await scanFilesWithProgress(files, secretsDetected);
+
+        // If the scan was canceled, exit early
+        if (wasCanceled) {
+            return false;
+        }
 
         // Filter high entropy secrets (e.g., base64 encoded)
         const highEntropySecrets = filterHighEntropySecrets(secretsDetected, BASE64_ENTROPY_LIMIT);
@@ -45,7 +50,7 @@ export async function scanLocation(context: vscode.ExtensionContext, folderPath:
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
         vscode.window.showErrorMessage(`Error while scanning folder: ${errorMessage}`);
         logMessage(`Error during scan: ${errorMessage}`, 'error');
-        return false; // Return false if error occurs
+        return false; // Return false if an error occurs
     }
 }
 
@@ -72,36 +77,40 @@ function getIncludeExcludePatterns(include: string[], exclude: string[]) {
 async function scanFilesWithProgress(
     files: vscode.Uri[],
     secretsDetected: Set<{ secret: string; lineNumber: number; patternName: string; filePath: string }>
-) {
-    await vscode.window.withProgress(
+): Promise<boolean> {
+    return await vscode.window.withProgress(
         {
             location: vscode.ProgressLocation.Notification,
             title: 'Scanning for exposed secrets',
             cancellable: true,
         },
         async (progress, token) => {
-            for (let i = 0; i < files.length; i++) {
-                if (token.isCancellationRequested) {
-                    progress.report({ message: 'Scan canceled.' });
-                    return; // Exit early if scan is canceled
-                }
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    if (token.isCancellationRequested) {
+                        progress.report({ message: 'Scan canceled.' });
+                        logMessage('Scan operation was canceled by the user.', 'info');
+                        return true; // Signal that the operation was canceled
+                    }
 
-                try {
-                    const content = await fs.promises.readFile(files[i].fsPath, 'utf-8');
-                    // Detect secrets in the file content
-                    const issues = (await scanFileContent(content, files[i].fsPath));
-                    issues.forEach(issue => secretsDetected.add(issue)); // Add detected secrets to the set
-                } catch (Error) {
-                    vscode.window.showErrorMessage(`Error reading file: ${files[i].fsPath}`);
-                    logMessage(`Error while reading file: ${files[i].fsPath}`, 'error');
+                    try {
+                        const content = await fs.promises.readFile(files[i].fsPath, 'utf-8');
+                        const issues = await scanFileContent(content, files[i].fsPath);
+                        issues.forEach(issue => secretsDetected.add(issue)); // Add detected secrets to the set
+                    } catch (Error) {
+                        vscode.window.showErrorMessage(`Error reading file: ${files[i].fsPath}`);
+                        logMessage(`Error while reading file: ${files[i].fsPath}`, 'error');
+                    }
+                    // Update progress
+                    progress.report({
+                        increment: Math.floor(((i + 1) / files.length) * 100),
+                        message: files[i].fsPath,
+                    });
                 }
-
-                // Update progress
-                progress.report({
-                    increment: Math.floor(((i + 1) / files.length) * 100),
-                    message: files[i].fsPath,
-                });
+            } finally {
+                secretsDetected.clear();
             }
+            return false; // Return false if the scan wasn't canceled
         }
     );
 }
