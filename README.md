@@ -132,12 +132,10 @@ When you run a scan, **CipherScan** generates detailed logs and a comprehensive 
 Logs are saved in the `.cipherscan-secrets.log` file located in the `.cipherscan` folder. This log file contains step-by-step details about the scan, including timestamps, files scanned, and any secrets detected. Below is an example of a log entry:
 
 ```
-[2024-11-24T11:35:24.402Z] [DEBUG] CipherScan extension activated.
 [2024-11-24T11:35:25.701Z] [INFO] ---------------------------- Workspace Scan started ----------------------------
 [2024-11-24T11:35:25.767Z] [INFO] Found 1 files to scan.
 [2024-11-24T11:35:25.770Z] [WARNING] Secret detected: GitHub Token at line 7 in /home/user/sample-project/test.js
-[2024-11-24T11:35:25.772Z] [INFO] --------------- Workspace Scan completed: Exposed secrets found. ---------------
-[2024-11-24T11:35:39.636Z] [DEBUG] CipherScan extension deactivated.
+[2024-11-24T11:35:25.772Z] [INFO] --------------- Workspace Scan completed: Exposed secrets found ---------------
 ```
 
 - **Scan started**: Timestamp when the scan was initiated.

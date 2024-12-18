@@ -1,6 +1,5 @@
 import { initializeStatusBar, disposeStatusBar } from './utils/statusBarUtils';
 import { scanLocation } from './detectors/secretDetector';
-import { logMessage } from './utils/loggingUtils';
 import { watchGitCommit, setupGitIgnoreListeners } from './utils/gitUtils';
 import { executeScan } from './utils/scanUtils';
 import * as vscode from 'vscode';
@@ -13,7 +12,6 @@ import * as vscode from 'vscode';
  * @param context - The extension context, used for managing subscriptions and extension lifecycle.
  */
 export function activate(context: vscode.ExtensionContext) {
-    logMessage('CipherScan extension activated.', 'debug');
 
     // Set up Git commit watcher to prompt for secret scans whenever a commit is made
     watchGitCommit(context);
@@ -38,7 +36,6 @@ export function activate(context: vscode.ExtensionContext) {
  * Cleans up resources and disposes of items like the status bar when the extension is deactivated.
  */
 export function deactivate() {
-    logMessage('CipherScan extension deactivated.', 'debug');
 
     // Dispose the status bar item to free up resources and prevent memory leaks
     disposeStatusBar();

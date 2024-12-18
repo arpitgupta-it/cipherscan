@@ -1,4 +1,5 @@
 import { getConfig } from '../constants/config';
+import { logMessage } from '../utils/loggingUtils';
 
 // Default file formats configuration: includes common file types and directories to exclude
 const defaultFileFormatsConfig = {
@@ -28,7 +29,7 @@ const loadUserExclude = (): string[] => {
         return Array.isArray(userExclude) ? userExclude : [];
     } catch (error) {
         // Log any potential errors loading configuration and return a safe default (empty array)
-        console.error("Error loading user-defined exclusions:", error);
+        logMessage("Error loading user-defined exclusions:", "error");
         return [];
     }
 };

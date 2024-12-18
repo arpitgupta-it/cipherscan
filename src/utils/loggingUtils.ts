@@ -9,7 +9,7 @@ import { LOG_FILE_NAME } from '../constants/default';
  * Duplicate messages (based on hash) are prevented from being logged.
  * 
  * @param message - The message to log, either as a string or an object with details (line number, pattern name, and file path).
- * @param level - The log level (e.g., "info", "error", "debug").
+ * @param level - The log level (e.g., "info", "warning", "error").
  */
 export function logMessage(message: string | { lineNumber: number, patternName: string, filePath: string }, level: string): void {
     // Get the full path for the log file
@@ -36,7 +36,7 @@ export function logMessage(message: string | { lineNumber: number, patternName: 
             try {
                 fs.renameSync(logFilePath, archivedLogFilePath); // Rotate the log file
             } catch (err) {
-                console.error('Error rotating log file:', err);
+                logMessage('Error rotating log file', 'err');
             }
         }
 
@@ -47,8 +47,8 @@ export function logMessage(message: string | { lineNumber: number, patternName: 
                 fs.appendFileSync(logFilePath, finalMessage); // Append the log message to the file
             });
         }
-    } catch (error) {
-        console.error('Error handling log file:', error);
+    } catch (err) {
+        logMessage('Error handling log file:', 'error');
     }
 }
 

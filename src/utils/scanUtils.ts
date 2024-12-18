@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { logMessage, createSeparatorLogLine } from './loggingUtils';
+import { setTargetPath } from './fileUtils';
 
 let isScanning = false;
 
@@ -71,6 +72,9 @@ export async function executeScan(
         }
     }
 
+    // Set the target path globally
+    setTargetPath(targetPath);
+
     isScanning = true;
     logMessage(createSeparatorLogLine(`${locationType} Scan started`), 'info');
 
@@ -78,8 +82,8 @@ export async function executeScan(
         // Execute the scan function with the selected path
         const hasSecrets = await scanFunction(context, targetPath || "");  // Pass an empty string if targetPath is undefined
         const scanResultMessage = hasSecrets
-            ? `${locationType} Scan completed: Exposed secrets found.`
-            : `${locationType} Scan completed: No secrets detected.`;
+            ? `${locationType} Scan completed: Exposed secrets found`
+            : `${locationType} Scan completed: No secrets detected`;
 
         logMessage(createSeparatorLogLine(scanResultMessage), 'info');
     } catch (error) {
