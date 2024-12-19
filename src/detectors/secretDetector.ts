@@ -108,9 +108,12 @@ async function scanFilesWithProgress(
                     });
                 }
             } finally {
-                secretsDetected.clear();
+                // Clear secretsDetected only if cancellation is requested
+                if (token.isCancellationRequested) {
+                    secretsDetected.clear();
+                }
             }
-            return false; // Return false if the scan wasn't canceled
+            return false; // Indicate the scan was not canceled
         }
     );
 }
