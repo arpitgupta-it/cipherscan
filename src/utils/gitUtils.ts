@@ -4,8 +4,6 @@ import path from 'path';
 import { getConfig } from '../constants/config';
 import { logMessage } from './loggingUtils';
 
-const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-
 /**
  * Prompts the user to run a secret scan before pushing committed changes.
  * If the user selects 'Yes', the scan is triggered via a VS Code command.
@@ -27,66 +25,102 @@ function promptForSecretScan(context: vscode.ExtensionContext): void {
 }
 
 /**
- * Watches the `.git/logs/HEAD` file for commit events and prompts the user to scan for secrets.
- * Registers a file system watcher to detect changes to the commit log and triggers the scan prompt.
+ * Watches the `.git/logs/HEAD` file for commit events in all relevant root folders and prompts the user to scan for secrets.
+ * Registers file system watchers to detect changes to commit logs in each root folder and triggers the scan prompt.
  * 
  * @param context - The VS Code extension context for managing subscriptions.
  */
 export function watchGitCommit(context: vscode.ExtensionContext): void {
-    if (!workspaceRoot) return; // Exit if no workspace is open
+    const workspaceFolders = vscode.workspace.workspaceFolders;
 
-    const gitLogsPath = path.join(workspaceRoot, '.git', 'logs', 'HEAD');
-
-    try {
-        const gitWatcher = vscode.workspace.createFileSystemWatcher(gitLogsPath);
-        gitWatcher.onDidChange(() => promptForSecretScan(context)); // Trigger scan prompt on commit
-        context.subscriptions.push(gitWatcher); // Ensure watcher is disposed properly
-    } catch (error) {
-        vscode.window.showErrorMessage('Error initializing Git commit watcher.');
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        return; // Exit if no workspace is open
     }
+
+    // Iterate over all root folders in the workspace
+    workspaceFolders.forEach((folder) => {
+        try {
+            const gitLogsPath = path.join(folder.uri.fsPath, '.git', 'logs', 'HEAD');
+
+            // Create a file system watcher for the `.git/logs/HEAD` file in each root folder
+            const gitWatcher = vscode.workspace.createFileSystemWatcher(gitLogsPath);
+            gitWatcher.onDidChange(() => promptForSecretScan(context)); // Trigger scan prompt on commit
+
+            context.subscriptions.push(gitWatcher); // Ensure watcher is disposed properly
+        } catch (error) {
+            logMessage('Error initializing Git commit watcher.', 'error');
+        }
+    });
 }
 
 /**
  * Ensures the `.cipherscan` folder is added to `.gitignore` to prevent Git from tracking scan reports.
- * Prompts the user before modifying the `.gitignore` file and appends `.cipherscan` if it’s not already listed.
+ * Prompts the user once before modifying the `.gitignore` files for all root folders and appends `.cipherscan` if it’s not already listed.
  */
 export async function addToGitIgnore(): Promise<void> {
     const config = getConfig(); // Fetch the latest configuration
     const gitIgnoreBoolean = config.get<boolean>('addToGitIgnore', true); // Default to true
 
-    if (!gitIgnoreBoolean || !workspaceRoot) return; // Exit if setting is disabled or no workspace
+    if (!gitIgnoreBoolean) return; // Exit if setting is disabled
 
-    const gitFolderPath = path.join(workspaceRoot, '.git');
-    const gitignorePath = path.join(workspaceRoot, '.gitignore');
+    // Get all root folders (supporting multi-root workspaces)
+    const workspaceFolders = vscode.workspace.workspaceFolders || [];
+    if (workspaceFolders.length === 0) return; // No workspace is open
 
-    try {
-        if (!fs.statSync(gitFolderPath).isDirectory()) return; // Ensure .git directory exists
+    // Track which folders need `.cipherscan` added
+    const foldersNeedingUpdate: { gitignorePath: string; folderName: string }[] = [];
 
-        let gitignoreContent = '';
-        try {
-            gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8'); // Read existing .gitignore
-        } catch {
-            fs.writeFileSync(gitignorePath, ''); // Create .gitignore if it doesn't exist
-        }
+    // Check all root folders for `.gitignore` status
+    for (const folder of workspaceFolders) {
+        const gitFolderPath = path.join(folder.uri.fsPath, '.git');
+        const gitignorePath = path.join(folder.uri.fsPath, '.gitignore');
 
-        // Only show prompt if '.cipherscan' is not already in .gitignore
-        if (!gitignoreContent.includes('.cipherscan')) {
-            const response = await vscode.window.showInformationMessage(
-                'The .cipherscan folder stores scan reports. Add it to .gitignore to avoid Git tracking?',
-                'Yes',
-                'No'
-            );
+        // Ensure .git directory exists and check if .gitignore needs modification
+        if (fs.existsSync(gitFolderPath) && fs.statSync(gitFolderPath).isDirectory()) {
+            let gitignoreContent = '';
+            try {
+                gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8'); // Read existing .gitignore
+            } catch {
+                fs.writeFileSync(gitignorePath, ''); // Create .gitignore if it doesn't exist
+            }
 
-            if (response === 'Yes') {
-                fs.appendFileSync(gitignorePath, '\n# Ignore .cipherscan folder\n.cipherscan\n');
-                vscode.window.showInformationMessage('.cipherscan folder added to .gitignore.');
-            } else {
-                vscode.window.showInformationMessage('.cipherscan folder was not added to .gitignore.');
+            // Add to list if `.cipherscan` is not already in `.gitignore`
+            if (!gitignoreContent.includes('.cipherscan')) {
+                foldersNeedingUpdate.push({ gitignorePath, folderName: folder.name });
             }
         }
-    } catch (error) {
-        // If an error occurs while checking the Git folder or modifying .gitignore, add to log file
-        logMessage('Failed to locate .git folder or modify .gitignore.', 'info');
+    }
+
+    // If no folders need updates, exit early
+    if (foldersNeedingUpdate.length === 0) return;
+
+    // Prompt user once
+    const response = await vscode.window.showInformationMessage(
+        'The .cipherscan folder stores scan reports. Add it to .gitignore to avoid Git tracking?',
+        'Yes',
+        'No'
+    );
+
+    if (response === 'Yes') {
+        const updatedFolders: string[] = [];
+
+        // Apply updates to all applicable folders
+        for (const { gitignorePath, folderName } of foldersNeedingUpdate) {
+            try {
+                fs.appendFileSync(gitignorePath, '\n# Ignore .cipherscan folder\n.cipherscan\n');
+                updatedFolders.push(folderName); // Track successfully updated folders
+            } catch (error) {
+                logMessage(`Failed to modify .gitignore in ${folderName}.`, 'error');
+            }
+        }
+
+        if (updatedFolders.length > 0) {
+            vscode.window.showInformationMessage(
+                `.cipherscan folder added to .gitignore in ${updatedFolders.join(', ')}.`
+            );
+        } else {
+            vscode.window.showInformationMessage('Failed to add .cipherscan folder to .gitignore.');
+        }
     }
 }
 

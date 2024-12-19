@@ -135,20 +135,20 @@ export function withFileLock(logFilePath: string, callback: () => void): void {
                 fse.ensureFileSync(lockFilePath);  // Ensure the lock file exists
                 lockAcquired = true;
             }
-        } catch (err) {
+        } catch (error) {
             logMessage('Error checking or creating lock file', 'error');
         }
     }
 
     try {
         callback();  // Execute the callback while holding the lock
-    } catch (err) {
-        logMessage('Error executing callback', 'err');
+    } catch (error) {
+        logMessage('Error executing callback', 'error');
     } finally {
         try {
             fse.removeSync(lockFilePath);  // Remove the lock file after callback execution
-        } catch (err) {
-            logMessage('Error removing lock file', 'err');
+        } catch (error) {
+            logMessage('Error removing lock file', 'error');
         }
     }
 }

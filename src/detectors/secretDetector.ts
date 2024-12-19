@@ -47,9 +47,7 @@ export async function scanLocation(context: vscode.ExtensionContext, folderPath:
         // Handle detected secrets (logging, WebView, report generation)
         return handleDetectedSecrets(highEntropySecrets, files.length, context);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-        vscode.window.showErrorMessage(`Error while scanning folder: ${errorMessage}`);
-        logMessage(`Error during scan: ${errorMessage}`, 'error');
+        logMessage('An error occurred while scanning the folder.', 'error');
         return false; // Return false if an error occurs
     }
 }
@@ -97,8 +95,7 @@ async function scanFilesWithProgress(
                         const content = await fs.promises.readFile(files[i].fsPath, 'utf-8');
                         const issues = await scanFileContent(content, files[i].fsPath);
                         issues.forEach(issue => secretsDetected.add(issue)); // Add detected secrets to the set
-                    } catch (Error) {
-                        vscode.window.showErrorMessage(`Error reading file: ${files[i].fsPath}`);
+                    } catch (error) {
                         logMessage(`Error while reading file: ${files[i].fsPath}`, 'error');
                     }
                     // Update progress

@@ -35,8 +35,8 @@ export function logMessage(message: string | { lineNumber: number, patternName: 
             const archivedLogFilePath = path.join(path.dirname(logFilePath), `secrets-${timestamp}.log`);
             try {
                 fs.renameSync(logFilePath, archivedLogFilePath); // Rotate the log file
-            } catch (err) {
-                logMessage('Error rotating log file', 'err');
+            } catch (error) {
+                logMessage('Error rotating log file', 'error');
             }
         }
 
@@ -47,7 +47,7 @@ export function logMessage(message: string | { lineNumber: number, patternName: 
                 fs.appendFileSync(logFilePath, finalMessage); // Append the log message to the file
             });
         }
-    } catch (err) {
+    } catch (error) {
         logMessage('Error handling log file:', 'error');
     }
 }
